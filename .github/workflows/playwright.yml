@@ -1,48 +1,94 @@
-name: Playwright Scheduled Test (Allure)
+# name: Playwright Scheduled Test (Allure)
+
+# on:
+#   schedule:
+#     - cron: "*/10 * * * *"    # every 10 minutes
+#   workflow_dispatch:
+
+# jobs:
+#   run-tests:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
+
+#       - name: Set up Node
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: 18
+
+#       # Install all dependencies (this avoids npm ci issues)
+#       - name: Install dependencies
+#         run: npm install
+
+#       # Install Playwright browsers + Linux dependencies correctly
+#       - name: Install Playwright Browsers and System Deps
+#         run: npx playwright install --with-deps
+
+#       # Run only your single test on chromium
+#       - name: Run Playwright Test
+#         run: |
+#           npx playwright test tests/Login_CICD_Pipeline.spec.js --project=chromium
+#         continue-on-error: false
+
+#       # Install allure commandline (needed to generate HTML)
+#       - name: Install Allure CLI
+#         run: npm install -D allure-commandline
+
+#       # Generate static HTML report
+#       - name: Generate Allure Report
+#         run: npx allure generate allure-results --clean -o allure-report
+
+#       # Upload report as artifact
+#       - name: Upload Allure HTML Report
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: allure-report
+#           path: allure-report
+
+
+
+name: Playwright Tests with Static Allure Report
 
 on:
-  schedule:
-    - cron: "*/10 * * * *"    # every 10 minutes
-  workflow_dispatch:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  run-tests:
+  test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-      - name: Set up Node
-        uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      # Install all dependencies (this avoids npm ci issues)
-      - name: Install dependencies
+      - name: Install Dependencies
         run: npm install
 
-      # Install Playwright browsers + Linux dependencies correctly
-      - name: Install Playwright Browsers and System Deps
+      - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
-      # Run only your single test on chromium
-      - name: Run Playwright Test
+      - name: Install Allure Commandline
+        run: npm install -g allure-commandline
+
+      - name: Run Playwright Tests
+        run: npx playwright test
+
+      - name: Generate Static Allure Report (Single HTML)
         run: |
-          npx playwright test tests/Login_CICD_Pipeline.spec.js --project=chromium
-        continue-on-error: false
+          allure generate --clean --single-file allure-results -o allure-static
 
-      # Install allure commandline (needed to generate HTML)
-      - name: Install Allure CLI
-        run: npm install -D allure-commandline
-
-      # Generate static HTML report
-      - name: Generate Allure Report
-        run: npx allure generate allure-results --clean -o allure-report
-
-      # Upload report as artifact
-      - name: Upload Allure HTML Report
-        uses: actions/upload-artifact@v4
+      - name: Upload Static Allure Report Artifact
+        uses: actions/upload-artifact@v3
         with:
-          name: allure-report
-          path: allure-report
+          name: allure-report-static
+          path: allure-static
+
