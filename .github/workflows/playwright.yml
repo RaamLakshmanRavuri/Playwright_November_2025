@@ -1,48 +1,106 @@
-name: Playwright Scheduled Test (Allure)
+# name: Playwright Scheduled Test (Allure)
+
+# on:
+#   schedule:
+#     - cron: "*/10 * * * *"    # every 10 minutes
+#   workflow_dispatch:
+
+# jobs:
+#   run-tests:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
+
+#       - name: Set up Node
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: 18
+
+#       # Install all dependencies (this avoids npm ci issues)
+#       - name: Install dependencies
+#         run: npm install
+
+#       # Install Playwright browsers + Linux dependencies correctly
+#       - name: Install Playwright Browsers and System Deps
+#         run: npx playwright install --with-deps
+
+#       # Run only your single test on chromium
+#       - name: Run Playwright Test
+#         run: |
+#           npx playwright test tests/Login_CICD_Pipeline.spec.js --project=chromium
+#         continue-on-error: false
+
+#       # Install allure commandline (needed to generate HTML)
+#       - name: Install Allure CLI
+#         run: npm install -D allure-commandline
+
+#       - name: Generate Static Allure Report (Single HTML)
+#         run: |
+#           allure generate --clean --single-file allure-results -o allure-static
+
+#       - name: Upload Static Allure Report Artifact
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: allure-report-static
+#           path: allure-static
+#           if-no-files-found: warn
+
+
+
+name: Playwright-Run-Every-10-Minutes
 
 on:
   schedule:
-    - cron: "*/10 * * * *"    # every 10 minutes
+    - cron: "*/10 * * * *"   # runs every 10 minutes
   workflow_dispatch:
 
 jobs:
-  run-tests:
+  test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Set up Node
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      # Install all dependencies (this avoids npm ci issues)
-      - name: Install dependencies
-        run: npm install
+      # -------------------------------
+      # Install Allure CLI manually
+      # -------------------------------
+      - name: Install Allure CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openjdk-11-jre-headless unzip wget
+          wget https://github.com/allure-framework/allure2/releases/latest/download/allure-2.29.0.zip -O allure.zip
+          unzip allure.zip
+          sudo mv allure-2.29.0 /opt/allure
+          sudo ln -s /opt/allure/bin/allure /usr/bin/allure
 
-      # Install Playwright browsers + Linux dependencies correctly
-      - name: Install Playwright Browsers and System Deps
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      # Run only your single test on chromium
-      - name: Run Playwright Test
-        run: |
-          npx playwright test tests/Login_CICD_Pipeline.spec.js --project=chromium
-        continue-on-error: false
+      - name: Run Playwright tests with Allure
+        run: npx playwright test --reporter=line,allure-playwright
 
-      # Install allure commandline (needed to generate HTML)
-      - name: Install Allure CLI
-        run: npm install -D allure-commandline
+      # -------------------------------
+      # Generate STATIC single-file Allure report
+      # -------------------------------
+      - name: Generate static Allure Single-File Report
+        run: allure generate --clean --single-file allure-results -o allure-static
 
-      - name: Generate Static Allure Report (Single HTML)
-        run: |
-          allure generate --clean --single-file allure-results -o allure-static
-
-      - name: Upload Static Allure Report Artifact
+      # -------------------------------
+      # Upload static Allure Report (NO deprecated version)
+      # -------------------------------
+      - name: Upload Allure Report Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: allure-report-static
+          name: allure-static-report
           path: allure-static
-          if-no-files-found: warn
