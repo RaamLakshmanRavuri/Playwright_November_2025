@@ -47,7 +47,6 @@ const loginButton = await page.locator("button[type='submit']");
 await loginButton.click();
 await page.waitForTimeout(5000);
 
-//expect.soft(page.locator("//h6[text()='Dashboard']")).toHaveText("Dashboard");
 await expect.soft(page.locator("//h6[text()='Dashboard']")).toHaveText("Dashboard");
 
 
