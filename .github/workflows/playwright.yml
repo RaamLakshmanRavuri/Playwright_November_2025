@@ -52,10 +52,9 @@
 name: Playwright Tests with Static Allure Report
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  schedule:
+    - cron: "*/10 * * * *"    # every 10 minutes
+  workflow_dispatch:
 
 jobs:
   test:
