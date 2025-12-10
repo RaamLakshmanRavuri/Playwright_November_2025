@@ -41,7 +41,8 @@ jobs:
           allure generate --clean --single-file allure-results -o allure-static
 
       - name: Upload Static Allure Report Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: allure-report-static
           path: allure-static
+          if-no-files-found: warn
