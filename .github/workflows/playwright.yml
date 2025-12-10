@@ -1,36 +1,63 @@
-name: Playwright Tests with Allure
+name: Playwright Scheduled Test (Allure)
 
+# run every 10 minutes
 on:
   schedule:
-    - cron: '*/10 * * * *' # Every 10 minutes
+    - cron: "*/10 * * * *"
   workflow_dispatch:
 
+permissions:
+  # minimal permissions needed (default is fine for artifacts)
+  contents: 'read'
+
 jobs:
-  test:
+  run-playwright:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
-      - name: Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Use Node.js 18
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: 18
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm ci
 
-      - name: Install Allure CLI
-        run: npm install -g allure-commandline --force
+      - name: Install Playwright browsers and deps
+        # this GitHub Action helps install Playwright browser binaries & dependencies
+        uses: microsoft/playwright-github-action@v1
 
-      - name: Run Playwright tests (Chrome only, specific file)
-        run: npx playwright test tests/Login_CICD_Pipeline.spec.js --project=chromium
+      - name: Install Playwright (if not in package.json)
+        run: npx playwright install --with-deps
 
-      - name: Generate Allure report
-        run: allure generate allure-results --clean -o allure-report
+      - name: Run Playwright test (single file, chromium)
+        # run only your spec file in chromium project
+        run: |
+          npx playwright test tests/Login_CICD_Pipeline.spec.js --project=chromium --reporter=list
+        # exit code will mark job success/failure as usual
 
-      - name: Upload Allure report artifact
+      - name: Ensure allure-results exists
+        run: |
+          echo "Listing allure-results"
+          ls -la allure-results || true
+
+      - name: Install allure commandline
+        run: |
+          # use the npm wrapper so we can run `npx allure`
+          npm i -D allure-commandline --no-audit --no-fund
+
+      - name: Generate Allure static report (HTML)
+        run: |
+          # create output dir
+          npx allure generate allure-results -o allure-report --clean || echo "Allure generation failed (maybe no results)"
+
+      - name: Archive Allure HTML report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: allure-report
