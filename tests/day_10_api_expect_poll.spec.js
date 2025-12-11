@@ -15,7 +15,7 @@ test('GET users - validate list', async ({ request }) => {
 });
 
 
-test.only('GET single user - validate fields', async ({ request }) => {
+test('GET single user - validate fields', async ({ request }) => {
   const response = await request.get('https://jsonplaceholder.typicode.com/users/1');
 
   expect(response.status()).toBe(200);

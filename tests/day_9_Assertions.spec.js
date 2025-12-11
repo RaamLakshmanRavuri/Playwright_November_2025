@@ -1,4 +1,5 @@
-const { test, expect } = require('@playwright/test');
+import { test, expect } from '@playwright/test';
+
 
 /**
  * PLAYWRIGHT ASSERTIONS - COMPLETE PRACTICAL GUIDE

@@ -1,4 +1,5 @@
-const { test, expect } = require('@playwright/test');
+import { test, expect } from '@playwright/test';
+
 
 /**
  * PLAYWRIGHT LOCATORS - COMPLETE GUIDE
@@ -10,7 +11,7 @@ test.describe('Playwright Locators Examples', () => {
   // ========================================
   // 1. getByRole - Recommended (Accessibility-based) 
   // ========================================
-  test.only('getByRole - locate by ARIA role', async ({ page }) => {
+  test('getByRole - locate by ARIA role', async ({ page }) => {
     await page.goto('https://the-internet.herokuapp.com/login');
     
     // Button by role
