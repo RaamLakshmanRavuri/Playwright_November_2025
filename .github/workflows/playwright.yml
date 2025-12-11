@@ -48,12 +48,83 @@
 #           if-no-files-found: warn
 
 
+#SUCCESS CODE BELOW
+# name: Playwright-CICD-Allure
+
+# on:
+#   schedule:
+#     - cron: "*/10 * * * *"   # every 10 mins
+#   workflow_dispatch:
+
+# jobs:
+#   test:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout project
+#         uses: actions/checkout@v4
+
+#       - name: Setup Node
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: 18
+
+#       # -----------------------------------------------------
+#       # Install latest Allure CLI dynamically (safe, no 404)
+#       # -----------------------------------------------------
+#       - name: Install Allure CLI (latest)
+#         run: |
+#           sudo apt-get update
+#           sudo apt-get install -y openjdk-11-jre-headless unzip wget
+#           LATEST=$(curl -s https://api.github.com/repos/allure-framework/allure2/releases/latest | grep tag_name | cut -d '"' -f 4)
+#           echo "Latest Allure Version: $LATEST"
+#           wget https://github.com/allure-framework/allure2/releases/download/$LATEST/allure-$LATEST.zip -O allure.zip
+#           unzip allure.zip
+#           sudo mv allure-$LATEST /opt/allure
+#           sudo ln -s /opt/allure/bin/allure /usr/bin/allure
+
+#       - name: Install NPM dependencies
+#         run: npm ci
+
+#       - name: Install Playwright Browsers
+#         run: npx playwright install --with-deps
+
+#       # -----------------------------------------------------
+#       # RUN PLAYWRIGHT TESTS WITH ALLURE
+#       # uses your config: allure-playwright reporter
+#       # -----------------------------------------------------
+#       # Run only your single test on chromium
+#       - name: Run Playwright Test
+#         run: |
+#           npx playwright test tests/Login_CICD_Pipeline.spec.js --project=chromium
+#         continue-on-error: false
+
+#       # -----------------------------------------------------
+#       # Generate STATIC SINGLE-FILE report (index.html)
+#       # -----------------------------------------------------
+#       - name: Generate Static Allure Report
+#         run: allure generate --clean --single-file allure-results -o allure-static
+
+#       # -----------------------------------------------------
+#       # Upload to GitHub Actions
+#       # -----------------------------------------------------
+#       - name: Upload Allure Static Report
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: allure-report
+#           path: allure-static
+
+
+
+
+
+
 
 name: Playwright-CICD-Allure
 
 on:
   schedule:
-    - cron: "*/10 * * * *"   # every 10 mins
+    - cron: "*/10 * * * *"
   workflow_dispatch:
 
 jobs:
@@ -64,55 +135,45 @@ jobs:
       - name: Checkout project
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      # -----------------------------------------------------
-      # Install latest Allure CLI dynamically (safe, no 404)
-      # -----------------------------------------------------
-      - name: Install Allure CLI (latest)
+      - name: Install Allure CLI
         run: |
           sudo apt-get update
           sudo apt-get install -y openjdk-11-jre-headless unzip wget
           LATEST=$(curl -s https://api.github.com/repos/allure-framework/allure2/releases/latest | grep tag_name | cut -d '"' -f 4)
-          echo "Latest Allure Version: $LATEST"
           wget https://github.com/allure-framework/allure2/releases/download/$LATEST/allure-$LATEST.zip -O allure.zip
           unzip allure.zip
           sudo mv allure-$LATEST /opt/allure
-          sudo ln -s /opt/allure/bin/allure /usr/bin/allure
+          sudo ln -sf /opt/allure/bin/allure /usr/local/bin/allure
+          echo "/usr/local/bin" >> $GITHUB_PATH
 
-      - name: Install NPM dependencies
+      - name: Verify Allure Installation
+        run: |
+          which allure
+          allure --version
+
+      - name: Install Dependencies
         run: npm ci
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
-      # -----------------------------------------------------
-      # RUN PLAYWRIGHT TESTS WITH ALLURE
-      # uses your config: allure-playwright reporter
-      # -----------------------------------------------------
-      # Run only your single test on chromium
-      - name: Run Playwright Test
-        run: |
-          npx playwright test --project=chromium
-        #npx playwright test tests/Login_CICD_Pipeline.spec.js --project=chromium
+      - name: Run Playwright Tests
+        run: npx playwright test --project=chromium
         continue-on-error: true
 
-      # -----------------------------------------------------
-      # Generate STATIC SINGLE-FILE report (index.html)
-      # -----------------------------------------------------
-      - name: Generate Static Allure Report
+      - name: Generate Allure Report
         if: always()
         run: allure generate --clean --single-file allure-results -o allure-static
 
-      # -----------------------------------------------------
-      # Upload to GitHub Actions
-      # -----------------------------------------------------
-      - name: Upload Allure Static Report
+      - name: Upload Allure Report Artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: allure-report
           path: allure-static
+
