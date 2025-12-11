@@ -110,8 +110,15 @@ test('Home Page Title', async ({ page }) => {
 
     await allure.attachment("Highlighted Credentials", await page.screenshot(), "image/png");
 
-    await page.locator("input[name='username']").fill(username.trim());
-    await page.locator("input[name='password']").fill(passValue.trim());
+    const userField = await page.locator("input[name='username']");
+    await userField.fill(username.trim());
+   
+    const passField = await page.locator("input[name='password']");
+    await passField.fill(passValue.trim());
+    
+    await highlightRed(page, userField);
+    await highlightRed(page, passField);
+    await allure.attachment("Filled Login Form", await page.screenshot(), "image/png");
   });
 
   await allure.step("Click Login Button", async () => {
