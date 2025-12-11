@@ -96,7 +96,8 @@ jobs:
       # Run only your single test on chromium
       - name: Run Playwright Test
         run: |
-          npx playwright test tests/Login_CICD_Pipeline.spec.js --project=chromium
+          npx playwright test --project=chromium
+        #npx playwright test tests/Login_CICD_Pipeline.spec.js --project=chromium
         continue-on-error: false
 
       # -----------------------------------------------------

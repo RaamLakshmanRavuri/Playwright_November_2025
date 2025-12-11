@@ -43,7 +43,7 @@ await passwordValue.fill(passValue);
 const getUserValue = await userTextValue.inputValue();
 console.log("Entered User Value is: "+getUserValue);
 
-const loginButton = await page.locator("button[type='submit']");
+//const loginButton = await page.locator("button[type='submit']");
 //await loginButton.click();
 
 
@@ -57,9 +57,4 @@ const[one, two, three] = await forgot.textContent().then(text=>text.split(" "));
 console.log("First Part: "+one);
 console.log("Second Part: "+two); 
 console.log("Third Part: "+three);  
-
-
-
-
-
 })

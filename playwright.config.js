@@ -21,6 +21,10 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      viewport: null, // disables default viewport
+      launchOptions: {
+        args: ['--start-maximized']
+      }
     }
   ],
 });
