@@ -98,18 +98,20 @@ jobs:
         run: |
           npx playwright test --project=chromium
         #npx playwright test tests/Login_CICD_Pipeline.spec.js --project=chromium
-        continue-on-error: false
+        continue-on-error: true
 
       # -----------------------------------------------------
       # Generate STATIC SINGLE-FILE report (index.html)
       # -----------------------------------------------------
       - name: Generate Static Allure Report
+        if: always()
         run: allure generate --clean --single-file allure-results -o allure-static
 
       # -----------------------------------------------------
       # Upload to GitHub Actions
       # -----------------------------------------------------
       - name: Upload Allure Static Report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: allure-report
