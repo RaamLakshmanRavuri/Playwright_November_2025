@@ -64,78 +64,123 @@
 
 
 
-import { test, expect } from '@playwright/test';
-import { allure } from "allure-playwright";
+// import { test, expect } from '@playwright/test';
+// import { allure } from "allure-playwright";
 
-// Highlight helpers
-async function highlightYellow(page, locator) {
-  await page.evaluate((el) => {
-    el.style.border = "3px solid yellow";
-    el.style.backgroundColor = "rgba(255,255,0,0.2)";
-  }, await locator.elementHandle());
-}
+// // Highlight helpers
+// async function highlightYellow(page, locator) {
+//   await page.evaluate((el) => {
+//     el.style.border = "3px solid yellow";
+//     el.style.backgroundColor = "rgba(255,255,0,0.2)";
+//   }, await locator.elementHandle());
+// }
 
-async function highlightRed(page, locator) {
-  await page.evaluate((el) => {
-    el.style.border = "3px solid red";
-    el.style.backgroundColor = "rgba(255,0,0,0.2)";
-  }, await locator.elementHandle());
-}
+// async function highlightRed(page, locator) {
+//   await page.evaluate((el) => {
+//     el.style.border = "3px solid red";
+//     el.style.backgroundColor = "rgba(255,0,0,0.2)";
+//   }, await locator.elementHandle());
+// }
 
-test('Home Page Title', async ({ page }) => {
+// test('Home Page Title', async ({ page }) => {
 
-  await allure.step("Open Login Page", async () => {
-    await page.goto('https://opensource-demo.orangehrmlive.com/web/index.php/auth/login');
-    await page.waitForTimeout(2000);
-    await allure.attachment("Login Page", await page.screenshot(), "image/png");
-  });
+//   await allure.step("Open Login Page", async () => {
+//     await page.goto('https://opensource-demo.orangehrmlive.com/web/index.php/auth/login');
+//     await page.waitForTimeout(2000);
+//     await allure.attachment("Login Page", await page.screenshot(), "image/png");
+//   });
 
-  await allure.step("Validate Page Title & URL", async () => {
-    await expect(page).toHaveTitle('OrangeHRM');
-    await expect(page).toHaveURL('https://opensource-demo.orangehrmlive.com/web/index.php/auth/login');
-  });
+//   await allure.step("Validate Page Title & URL", async () => {
+//     await expect(page).toHaveTitle('OrangeHRM');
+//     await expect(page).toHaveURL('https://opensource-demo.orangehrmlive.com/web/index.php/auth/login');
+//   });
 
-  const userText = page.locator("//p[contains(normalize-space(),'Admin')]");
-  const password = page.locator("//p[contains(normalize-space(),'admin')]");
+//   const userText = page.locator("//p[contains(normalize-space(),'Admin')]");
+//   const password = page.locator("//p[contains(normalize-space(),'admin')]");
 
-  await allure.step("Extract Username & Password", async () => {
-    await highlightYellow(page, userText);
-    await highlightYellow(page, password);
+//   await allure.step("Extract Username & Password", async () => {
+//     await highlightYellow(page, userText);
+//     await highlightYellow(page, password);
 
-    const userContent = await userText.textContent();
-    const passContent = await password.textContent();
+//     const userContent = await userText.textContent();
+//     const passContent = await password.textContent();
 
-    const [, username] = userContent.split(':');
-    const [, passValue] = passContent.split(':');
+//     const [, username] = userContent.split(':');
+//     const [, passValue] = passContent.split(':');
 
-    await allure.attachment("Highlighted Credentials", await page.screenshot(), "image/png");
+//     await allure.attachment("Highlighted Credentials", await page.screenshot(), "image/png");
 
-    const userField = await page.locator("input[name='username']");
-    await userField.fill(username.trim());
+//     const userField = await page.locator("input[name='username']");
+//     await userField.fill(username.trim());
    
-    const passField = await page.locator("input[name='password']");
-    await passField.fill(passValue.trim());
+//     const passField = await page.locator("input[name='password']");
+//     await passField.fill(passValue.trim());
     
-    await highlightRed(page, userField);
-    await highlightRed(page, passField);
-    await allure.attachment("Filled Login Form", await page.screenshot(), "image/png");
+//     await highlightRed(page, userField);
+//     await highlightRed(page, passField);
+//     await allure.attachment("Filled Login Form", await page.screenshot(), "image/png");
+//   });
+
+//   await allure.step("Click Login Button", async () => {
+//     const loginButton = page.locator("button[type='submit']");
+//     await highlightYellow(page, loginButton);
+//     await allure.attachment("Before Login Click", await page.screenshot(), "image/png");
+//     await loginButton.click();
+//   });
+
+//   await allure.step("Verify Dashboard", async () => {
+//     const dashboard = page.locator("//h6[text()='Dashboard']");
+//     await page.waitForTimeout(3000);
+//     await highlightRed(page, dashboard);
+//     await allure.attachment("Dashboard Page", await page.screenshot(), "image/png");
+
+//     await expect.soft(dashboard).toHaveText("Dashboard");
+//   });
+
+// });
+
+
+
+import { test, expect } from '@playwright/test';
+import { step, attachScreenshot, highlightWithShot, fillInput } from '../utility/allureUtils.js';
+
+test("Home Page Title", async ({ page }) => {
+
+  await step("Open Login Page", async () => {
+    await page.goto('https://opensource-demo.orangehrmlive.com/web/index.php/auth/login');
+    await attachScreenshot("Login Page", page);
   });
 
-  await allure.step("Click Login Button", async () => {
+  await step("Validate Page Details", async () => {
+    await expect(page).toHaveTitle("OrangeHRM");
+    await expect(page).toHaveURL(/auth\/login/);
+  });
+
+  await step("Extract Username & Password", async () => {
+    const userText = page.locator("//p[contains(normalize-space(),'Admin')]");
+    const password = page.locator("//p[contains(normalize-space(),'admin')]");
+
+    await highlightWithShot(page, userText, "Highlighted Username");
+    await highlightWithShot(page, password, "Highlighted Password");
+
+    const username = (await userText.textContent()).split(":")[1].trim();
+    const passValue = (await password.textContent()).split(":")[1].trim();
+
+    await fillInput(page, page.locator("input[name='username']"), username, "Username Field");
+    await fillInput(page, page.locator("input[name='password']"), passValue, "Password Field");
+  });
+
+  await step("Click Login Button", async () => {
     const loginButton = page.locator("button[type='submit']");
-    await highlightYellow(page, loginButton);
-    await allure.attachment("Before Login Click", await page.screenshot(), "image/png");
+    await highlightWithShot(page, loginButton, "Before Login Click");
     await loginButton.click();
   });
 
-  await allure.step("Verify Dashboard", async () => {
+  await step("Verify Dashboard", async () => {
     const dashboard = page.locator("//h6[text()='Dashboard']");
-    await page.waitForTimeout(3000);
-    await highlightRed(page, dashboard);
-    await allure.attachment("Dashboard Page", await page.screenshot(), "image/png");
-
+    await dashboard.waitFor({ state: "visible" });
+    await highlightWithShot(page, dashboard, "Dashboard Page", "red");
     await expect.soft(dashboard).toHaveText("Dashboard");
   });
 
 });
-
