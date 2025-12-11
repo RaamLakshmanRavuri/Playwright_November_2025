@@ -49,11 +49,11 @@
 
 
 
-name: Playwright-Run-Every-10-Minutes
+name: Playwright-CICD-Allure
 
 on:
   schedule:
-    - cron: "*/10 * * * *"   # runs every 10 minutes
+    - cron: "*/10 * * * *"   # every 10 mins
   workflow_dispatch:
 
 jobs:
@@ -61,7 +61,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout project
         uses: actions/checkout@v4
 
       - name: Setup Node
@@ -69,38 +69,44 @@ jobs:
         with:
           node-version: 18
 
-      # -------------------------------
-      # Install Allure CLI manually
-      # -------------------------------
-      - name: Install Allure CLI
+      # -----------------------------------------------------
+      # Install latest Allure CLI dynamically (safe, no 404)
+      # -----------------------------------------------------
+      - name: Install Allure CLI (latest)
         run: |
           sudo apt-get update
           sudo apt-get install -y openjdk-11-jre-headless unzip wget
-          wget https://github.com/allure-framework/allure2/releases/latest/download/allure-2.29.0.zip -O allure.zip
+          LATEST=$(curl -s https://api.github.com/repos/allure-framework/allure2/releases/latest | grep tag_name | cut -d '"' -f 4)
+          echo "Latest Allure Version: $LATEST"
+          wget https://github.com/allure-framework/allure2/releases/download/$LATEST/allure-$LATEST.zip -O allure.zip
           unzip allure.zip
-          sudo mv allure-2.29.0 /opt/allure
+          sudo mv allure-$LATEST /opt/allure
           sudo ln -s /opt/allure/bin/allure /usr/bin/allure
 
-      - name: Install dependencies
+      - name: Install NPM dependencies
         run: npm ci
 
-      - name: Install Playwright browsers
+      - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
-      - name: Run Playwright tests with Allure
-        run: npx playwright test --reporter=line,allure-playwright
+      # -----------------------------------------------------
+      # RUN PLAYWRIGHT TESTS WITH ALLURE
+      # uses your config: allure-playwright reporter
+      # -----------------------------------------------------
+      - name: Run Tests
+        run: npx playwright test
 
-      # -------------------------------
-      # Generate STATIC single-file Allure report
-      # -------------------------------
-      - name: Generate static Allure Single-File Report
+      # -----------------------------------------------------
+      # Generate STATIC SINGLE-FILE report (index.html)
+      # -----------------------------------------------------
+      - name: Generate Static Allure Report
         run: allure generate --clean --single-file allure-results -o allure-static
 
-      # -------------------------------
-      # Upload static Allure Report (NO deprecated version)
-      # -------------------------------
-      - name: Upload Allure Report Artifact
+      # -----------------------------------------------------
+      # Upload to GitHub Actions
+      # -----------------------------------------------------
+      - name: Upload Allure Static Report
         uses: actions/upload-artifact@v4
         with:
-          name: allure-static-report
+          name: allure-report
           path: allure-static
