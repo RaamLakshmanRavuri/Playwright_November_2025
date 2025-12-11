@@ -11,8 +11,12 @@ export default defineConfig({
     ['html']
   ],
   use: {
-    trace: 'on-first-retry',
-  },
+  baseURL: 'https://opensource-demo.orangehrmlive.com/web/index.php/auth/login',
+  headless: true,
+  screenshot: 'on',          // Capture screenshots for each step
+  video: 'on',               // Attach video
+  trace: 'on',               // Full trace
+},
   projects: [
     {
       name: 'chromium',
