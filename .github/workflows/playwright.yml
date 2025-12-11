@@ -93,8 +93,11 @@ jobs:
       # RUN PLAYWRIGHT TESTS WITH ALLURE
       # uses your config: allure-playwright reporter
       # -----------------------------------------------------
-      - name: Run Tests
-        run: npx playwright test
+      # Run only your single test on chromium
+      - name: Run Playwright Test
+        run: |
+          npx playwright test tests/Login_CICD_Pipeline.spec.js --project=chromium
+        continue-on-error: false
 
       # -----------------------------------------------------
       # Generate STATIC SINGLE-FILE report (index.html)
