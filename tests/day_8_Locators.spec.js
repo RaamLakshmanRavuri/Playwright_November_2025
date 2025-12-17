@@ -16,6 +16,7 @@ test.describe('Playwright Locators Examples', () => {
     
     // Button by role
     await page.getByRole('button', { name: 'Login' }).click();
+    await page.getByRole('button', { name: 'Login' }).click();
     
     // Textbox/Input
     await page.getByRole('textbox', { name: /username/i }).fill('tomsmith');
