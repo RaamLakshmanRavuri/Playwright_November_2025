@@ -144,7 +144,7 @@
 import { test, expect } from '@playwright/test';
 import { step, attachScreenshot, highlightWithShot, fillInput } from '../utility/allureUtils.js';
 
-test("Home Page Title", async ({ page }) => {
+test("Home Page Title", async ({ page },maxRetries = 3, delay = 1000) => {
 
   await step("Open Login Page", async () => {
     await page.goto('https://opensource-demo.orangehrmlive.com/web/index.php/auth/login');
