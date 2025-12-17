@@ -159,6 +159,7 @@ test("Home Page Title", async ({ page },maxRetries = 3, delay = 1000) => {
   await step("Extract Username & Password", async () => {
     const userText = page.locator("//p[contains(normalize-space(),'Admin')]");
     const password = page.locator("//p[contains(normalize-space(),'admin')]");
+    
 
     await highlightWithShot(page, userText, "Highlighted Username");
     await highlightWithShot(page, password, "Highlighted Password");
