@@ -118,8 +118,6 @@
 
 
 
-
-
 name: Playwright-CICD-Allure
 
 on:
@@ -127,6 +125,7 @@ on:
     - cron: "*/10 * * * *"
   workflow_dispatch:
 
+    
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -153,7 +152,6 @@ jobs:
 
       - name: Verify Allure Installation
         run: |
-          which allure
           allure --version
 
       - name: Install Dependencies
@@ -166,14 +164,16 @@ jobs:
         run: npx playwright test --project=chromium
         continue-on-error: true
 
-      - name: Generate Allure Report
+      - name: Generate Static Allure Report
         if: always()
-        run: allure generate --clean --single-file allure-results -o allure-static
+        run: |
+          allure generate allure-results --clean --single-file -o allure-static
 
       - name: Upload Allure Report Artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-report
+          name: allure-static-report
           path: allure-static
+
 

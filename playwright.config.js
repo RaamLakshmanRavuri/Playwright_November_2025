@@ -15,7 +15,7 @@ export default defineConfig({
   headless: true,
   screenshot: 'on',          // Capture screenshots for each step
   video: 'on',               // Attach video
-  trace: 'on',               // Full trace
+  trace: 'off',               // Full trace
 },
   projects: [
     {
